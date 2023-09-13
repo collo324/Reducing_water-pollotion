@@ -1,0 +1,145 @@
+  mutate(
+    nox_raw = median,
+    nox_n = case_when(
+      median <= 0.4 ~ 1,
+      between(median, 0.4, 0.8) ~ 2,
+      between(median, 0.8, 1.2) ~ 3,
+      between(median, 1.2, 1.6) ~ 4,
+      median > 1.6 ~ 5
+    ),
+    nox_label = case_when(
+      nox_n == 1 ~ "Very Low Concentration (<=0.4)",
+      nox_n == 2 ~ "Low Concentration (>0.4-0.8)",
+      nox_n == 3 ~ "Moderate Concentration (>0.8-1.2)",
+      nox_n == 4 ~ "High Concentration (>1.2-1.6)",
+      nox_n == 5 ~ "Very High Concentration (>1.6)"
+    )
+  ) %>%
+  dplyr::select(HYBAS_ID, nox_raw:nox_label)
+```
+
+#### 3.2.3. Periphyton Growth Potential
+
+```{r}
+tnc_n <- exact_extract(tnc, h6, fun = c("mean", "median", "quantile", "majority", "coefficient_of_variation"), quantiles = 0.75,
+                       append_cols = "HYBAS_ID", progress = TRUE)
+
+skim(tnc_n)
+
+filter(tnc_n, coefficient_of_variation > 1) %>% nrow()/nrow(tnc_n) # 4% of h6 basins show high variability
+```
+
+```{r}
+tpc_n <- exact_extract(tpc, h6, fun = c("mean", "median", "quantile", "majority", "coefficient_of_variation"), quantiles = 0.75,
+                       append_cols = "HYBAS_ID", progress = TRUE)
+
+skim(tpc_n)
+
+filter(tpc_n, coefficient_of_variation > 1) %>% nrow()/nrow(tpc_n) # 2% of h6 basins show high variability
+```
+
+```{r}
+pgp_n <- tnc_n %>%
+  dplyr::select(HYBAS_ID, tnc_raw = median) %>%
+  left_join(
+    dplyr::select(tpc_n, HYBAS_ID, tpc_raw = median),
+    by = "HYBAS_ID" 
+  ) %>%
+  mutate(
+    ratio_n_p = tnc_raw/tpc_raw,
+    limiting = if_else(ratio_n_p < 7, "N-limited", "P-limited"),
+    pgp_n = case_when(
+      limiting == "N-limited" & tnc_raw <= 0.4 ~ 1,
+      limiting == "N-limited" & between(tnc_raw, 0.4, 0.8) ~ 2,
+      limiting == "N-limited" & between(tnc_raw, 0.8, 1.2) ~ 3,
+      limiting == "N-limited" & between(tnc_raw, 1.2, 1.6) ~ 4,
+      limiting == "N-limited" & tnc_raw > 1.6 ~ 5,
+      
+      limiting == "P-limited" & tpc_raw <= 0.023 ~ 1,
+      limiting == "P-limited" & between(tpc_raw, 0.023, 0.046) ~ 2,
+      limiting == "P-limited" & between(tpc_raw, 0.046, 0.100) ~ 3,
+      limiting == "P-limited" & between(tpc_raw, 0.100, 0.150) ~ 4,
+      limiting == "P-limited" & tpc_raw > 0.150 ~ 5
+    ),
+    pgp_label = case_when(
+      limiting == "N-limited" & pgp_n == 1 ~ "N-limited growth acceptable",
+      limiting == "N-limited" & pgp_n == 2 ~ "N-limited growth acceptable",
+      limiting == "N-limited" & pgp_n == 3 ~ "N-limited growth undesirable",
+      limiting == "N-limited" & pgp_n == 4 ~ "N-limited growth undesirable",
+      limiting == "N-limited" & pgp_n == 5 ~ "N-limited growth undesirable",
+      
+      limiting == "P-limited" & pgp_n == 1 ~ "P-limited growth acceptable",
+      limiting == "P-limited" & pgp_n == 2 ~ "P-limited growth acceptable",
+      limiting == "P-limited" & pgp_n == 3 ~ "P-limited growth undesirable",
+      limiting == "P-limited" & pgp_n == 4 ~ "P-limited growth undesirable",
+      limiting == "P-limited" & pgp_n == 5 ~ "P-limited growth undesirable"
+    )
+  ) %>%
+  dplyr::select(HYBAS_ID, tnc_raw, tpc_raw, pgp_n, pgp_label)
+```
+
+#### 3.2.4. Join datasets and Export
+
+```{r}
+wp_n <- h6 %>%
+  st_join(cep_n, largest = TRUE) %>%
+  left_join(nox_n, by = "HYBAS_ID") %>%
+  left_join(pgp_n, by = "HYBAS_ID")
+```
+
+```{r}
+write_rds(wp_n, here("output", "wp_n.rds"))
+```
+
+## 4. Identify the value for the unified layer
+
+### 4.1. Max of Water Availability
+
+```{r}
+wa_n <- read_rds(here("output", "wa_n.rds"))
+```
+
+```{r}
+son_wa <- wa_n %>%
+  rowwise %>%
+  mutate(
+    wa_max = max(c(bws_n, wdp_n, wsb_n), na.rm = TRUE),
+    .after = region
+  ) %>%
+  ungroup()
+```
+
+### 4.2. Max of Water Pollution
+
+```{r}
+wp_n <- read_rds(here("output", "wp_n.rds"))
+```
+
+```{r}
+son_wp <- wp_n %>%
+  rowwise %>%
+  mutate(
+    wp_max = max(c(cep_n, nox_n, pgp_n), na.rm = TRUE),
+    .after = region
+  ) %>%
+  ungroup()
+```
+
+## 5. Join final output and Export
+
+```{r}
+son_water <- son_wa %>%
+  left_join(
+    son_wp %>% dplyr::select(-c(WMOBB_id:region)) %>% st_drop_geometry(),
+    by = "HYBAS_ID"
+  ) %>%
+  relocate(geometry, .after = last_col())
+```
+
+```{r}
+write_rds(son_water, here("output", "sbnt_son_water.rds"))
+```
+
+```{r}
+st_write(son_water, here("output", "sbnt_son_water.shp"), layer_options = "ENCODING=UTF-8", delete_layer = TRUE)
+```
