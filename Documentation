@@ -1,1 +1,237 @@
+State of Nature layers for Water Availability and Water Pollution to support SBTN Step 1: Assess and Step 2: Interpret & Prioritize
+
+There are multiple well-recognized and peer-reviewed global datasets that can be used to assess water availability and water pollution. Each of these datasets are based on different inputs, modeling approaches, and assumptions. Therefore, in SBTN Step 1: Assess and Step 2: Interpret & Prioritize, companies are required to consult different global datasets for a robust and comprehensive State of Nature (SoN) assessment for water availability and water pollution. 
+To streamline this process, WWF, the World Resources Institute (WRI), and SBTN worked together to develop two ready-to-use unified layers of SoN – one for water availability and one for water pollution – in line with the Technical Guidance for Steps 1: Assess and Step 2: Interpret & Prioritize. The result is a single file (shapefile) containing the maximum value both for water availability and for water pollution, as well as the datasets’ raw values (as references). This data is publicly available for download from https://doi.org/10.5281/zenodo.7797979 . See the data’s columns and description in the Appendix.
+These unified layers will make it easier for companies to implement a robust approach, and they will lead to more aligned and comparable results between companies. A temporary App is available at https://arcg.is/0z9mOD0 to help companies assess the SoN for water availability and water pollution around their operations and supply chain locations. In the future, these layers will become available both in the WRI’s Aqueduct and in the WWF Risk Filter Suite.
+
+For the SoN for water availability, the following datasets were considered:
+Baseline water stress (Hofste et al. 2019), data available here 
+Water depletion (Brauman et al. 2016), data available here 
+Blue water scarcity (Mekonnen & Hoekstra 2016), data upon request to the authors 
+For the SoN for water pollution, the following datasets were considered:
+Coastal Eutrophication Potential (Hofste et al. 2019), data available here
+Nitrate-Nitrite Concentration (Damania et al. 2019), data available here 
+Periphyton Growth Potential (McDowell et al. 2020), data available here 
+
+In general, the same processing steps were performed for all datasets:  
+Compute the area-weighted median of each dataset at a common spatial resolution, i.e. HydroSHEDS HydroBasins Level 6 in this case.
+Classify datasets to a common range as reclassifying raw values to 1-5 values, where 0 (zero) was used for cells or features with no data. See the thresholds used for each dataset on the next pages. These were dataset’s authors definitions and/or recommendations. 
+Identify the maximum value between the classified datasets, separately, for Water Availability and for Water Pollution.
+
+For transparency and reproducibility, the code is publicly available at https://github.com/rafaexx/sbtn-SoN-water
+
+Baseline water stress (Hofste et al. 2019), data available here
+The WRI’s Baseline water stress measures the ratio of total surface and groundwater withdrawals to available renewable water. This indicator is based on model outputs from PCR-GLOBWB 2 to compute average monthly values, for the period 1960-2014, then to produce regression values for the year 2014 (baseline). 
+Raw values were classified as follows:
+Raw value
+Label
+New value
+≤ 0.1
+Low
+1
+> 0.1 – 0.2
+Low - Medium
+2
+> 0.2 – 0.4
+Medium - High
+3
+> 0.4 – 0.8
+High
+4
+> 0.8
+Extremely High
+5
+
+
+Arid and low water use
+5
+
+
+Water depletion (Brauman et al. 2016), data available here
+Water depletion measures the ratio of surface and ground water consumptive use to available renewable water. This indicator is based on model outputs from WaterGAP3 to compute average annual and monthly values, for the period 1971-2000, and to map seasonal depletion and dry-year depletion.
+Raw values were classified as follows:
+Raw value
+Label
+New value
+1
+≤ 5% annual depletion
+1
+2
+> 5 – 25% annual depletion
+2
+5
+> 25 – 75% annual depletion and at least 3 out of 30 years had at least one month with monthly depletion ratio >75% (Dry-Year)
+3
+6
+> 25 – 75% annual depletion and at least one month every year the monthly depletion ratio is >75% (Seasonal)
+4
+7
+> 75 – 100% annual depletion
+5
+8
+> 100% annual depletion
+5
+
+
+Blue water scarcity (Mekonnen & Hoekstra 2016), data upon request to the authors
+Blue water scarcity measures the ratio of the blue water footprint to the total blue water availability. This indicator is based on the global standard for water footprint assessment to compute average monthly values and an annual average value (10-year average for the period 1996-2005).
+Raw values were classified as follows:
+Raw value
+Label
+New value
+≤ 0.2
+Very low
+1
+> 0.2 – 1
+Low
+2
+> 1 – 2
+Moderate
+3
+> 2 – 5
+Significant
+4
+> 5
+Severe
+5
+
+
+Coastal Eutrophication Potential (Hofste et al. 2019), data available here
+Coastal eutrophication potential measures the potential for riverine loadings of nitrogen (N), phosphorus (P), and silica (Si) to stimulate harmful algal blooms in coastal waters.
+Raw values were classified as follows:
+Raw value
+Label
+New value
+≤ -5
+Low
+1
+> -5 – 0
+Low - Medium
+2
+> 0 – 1
+Medium - High
+3
+> 1 – 5
+High
+4
+> 5
+Extremely High
+5
+
+
+Nitrate-Nitrite Concentration (Damania et al. 2019), data available here
+Nitrate-Nitrite Concentration is based on a combination of monitoring data and a machine learning prediction model. Here we used the average predicted values between 2006 and 2010, i.e. the last 5 years of available data.
+Raw values were classified as follows:
+Raw value
+Label
+New value
+≤ 0.4
+Very Low Concentration
+1
+> 0.4 – 0.8 
+Low Concentration 
+2
+> 0.8 – 1.2
+Moderate Concentration 
+3
+> 1.2 – 1.6
+High Concentration 
+4
+> 1.6
+Very High Concentration 
+5
+
+
+Periphyton Growth Potential (McDowell et al. 2020), data available here
+Periphyton Growth Potential is based on global model of dissolved and total nitrogen (N) and phosphorus (P) concentrations and ratios to determine which nutrient is limiting periphyton proliferation during the growing season. 
+Raw values were classified as follows, i.e., a similar classification as in the original publication, however, using more thresholds: 
+Raw value
+Label
+New value
+N:P ratio < 7 and N ≤ 0.4
+N-limited growth acceptable
+1
+N:P ratio < 7 and N < 0.4 – 0.8
+N-limited growth acceptable
+2
+N:P ratio < 7 and N < 0.8 – 1.2
+N-limited growth undesirable
+3
+N:P ratio < 7 and N < 1.2 – 1.6
+N-limited growth undesirable
+4
+N:P ratio < 7 and N > 1.6
+N-limited growth undesirable
+5
+N:P ratio ≥ 7 and P ≤ 0.023
+P-limited growth acceptable
+1
+N:P ratio ≥ 7 and P < 0.023 – 0.046
+P-limited growth acceptable
+2
+N:P ratio ≥ 7 and P < 0.046 – 0.100
+P-limited growth undesirable
+3
+N:P ratio ≥ 7 and P < 0.100 – 0.150
+P-limited growth undesirable
+4
+N:P ratio ≥ 7 and P > 0.150
+P-limited growth undesirable
+5
+
+
+Appendix 
+
+Columns and description of the data available at https://doi.org/10.5281/zenodo.7797979 
+HYBAS_ID
+id from the HydroSHEDS HydroBasins Level 6 (h6)
+WMOBB_id
+id from the WMO Basins and Sub-Basins
+WMOBB_name
+Name of the basin in which the h6 is within
+region
+Name of the region in which the h6 is within
+wa_max
+Maximum value between water availability layers: bws_n, wdp_n, wsb_n
+bws_raw
+Raw value of Baseline Water Stress (as in the original dataset)
+bws_n
+Variable bws_raw classified to 1-5 values
+bws_label
+Label of Baseline Water Stress classes (based on the original dataset)
+wdp_raw
+Median of Water Depletion pixel values within h6 (previously classified to 1-5)
+wdp_n
+Variable wdp_raw classified to 1-5 values
+wdp_label
+Label of Water Depletion classes (based on the original dataset)
+wsb_raw
+Median of Blue Water Scarcity pixel values within h6
+wsb_n
+Variable wsb_raw classified to 1-5 values
+wsb_label
+Label of Blue Water Scarcity classes (based on the original dataset)
+wp_max
+Maximum value between water pollution layers: cep_n, nox_n, pgp_n
+cep_raw
+Raw value of Coastal Eutrophication Potential (as in the original dataset)
+cep_n
+Variable cep_raw classified to 1-5 values
+cep_label
+Label of Coastal Eutrophication Potential classes (based on the original dataset)
+nox_raw
+Median of Nitrate-Nitrite Concentration pixel values within h6
+nox_n
+Variable nox_raw classified to 1-5 values
+nox_label
+Label of Nitrate-Nitrite Concentration classes
+tnc_raw
+Median of Total Nitrogen Concentration pixel values within h6
+tpc_raw
+Median of Total Phosphorus Concentration pixel values within h6
+pgp_n
+Variable tnc_raw and tpc_raw classified to 1-5 values
+pgp_label
+Label of Periphyton Growth Potential classes (based on the original dataset)
+
 
