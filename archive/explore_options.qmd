@@ -1,9 +1,9 @@
 ---
-title: "SBTN State of Nature Water unified layers"
-subtitle: "Exploring options of unified layer"
-author: "Rafael Camargo"
-date: "March 30, 2023"
-engine: knitr
+title: "Reducing water pollution in the textile manufacturing industry "
+subtitle: "water pollution "
+author: "Emmanuel lekishon"
+date: "sep13, 2023"
+engine: Emma
 format:
   html:
     toc: true
